@@ -128,21 +128,3 @@ while True:
     print(' \u203E\u203E\u203E \u203E\u203E\u203E \u203E\u203E\u203E ')
 
     
-
-    
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-#print('|\u203E|\u203E|\u203E|')
-#print(' \u203E \u203E \u203E')
