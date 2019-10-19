@@ -1,11 +1,58 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QKeySequence, QPalette, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import sys
 import functions as func
 
 
 class MainWindow(QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+        self.initUI()
+
+    def initUI(self):
+        ###Main Menu##
+        mainMenu = QVBoxLayout()
+        l1 = QLabel()
+        l1.setText("Main Menu")
+        mainMenu.addWidget(l1)
+        startGame = QPushButton("Start a Game")
+        mainMenu.addWidget(startGame)
+        enterPlayerIds = QPushButton("Enter Player Ids")
+        mainMenu.addWidget(enterPlayerIds)
+        viewScore = QPushButton("View Score")
+        mainMenu.addWidget(viewScore)
+        exitGame = QPushButton("Exit Game")
+        mainMenu.addWidget(exitGame)
+        widget = QWidget()
+        self.setCentralWidget(widget)
+        widget.setLayout(mainMenu)
+
+        # Signals for "Main Menu" 
+        startGame.clicked.connect(self.start_game)
+        enterPlayerIds.clicked.connect(self.enter_player_ids)
+        viewScore.clicked.connect(self.view_score)
+        exitGame.clicked.connect(self.close)
+
+        ##File menu#
+        menu = self.menuBar()
+        filemenu = menu.addMenu("&File")
+        about = QAction("&About")
+        filemenu.addAction(about)
+        about.triggered.connect(display_about)
+        close = QAction("&Close")
+        close.triggered.connect(self.close)
+        filemenu.addAction(close)
+
+    def start_game(self):
+        print("Start game pushed!")
+    
+    def enter_player_ids(self):
+        print("Enter player IDs pushed!")
+    
+    def view_score(self):
+        print("View score pushed!")
+
     def closeEvent(self,e):
         answer = QMessageBox.question(window, None, "You are about to leave the game.",
         QMessageBox.Ok | QMessageBox.Cancel)
@@ -26,14 +73,14 @@ def display_about():
     QMessageBox.about(window, "About Tick Tack Toe", text)
 
 
-def viewScore():
-    text = "<center>" \
-            "<h1>Score</h1>" \
-            "&#8291;" \
-           "</center>" \
-           "<p>Player 1 score is: <br/>" \
-           "Player 2 score is: </p>" 
-    QMessageBox.Ok(window, "Game Score", text)
+# def view_score(player1Score, player2Score):
+#     text = "<center>" \
+#             "<h1>Score</h1>" \
+#             "&#8291;" \
+#            "</center>" \
+#            "<p>Player 1 score is: <br/>" \
+#            "Player 2 score is: </p>" 
+#     QMessageBox.Ok(window, "Game Score", text)
 
 
 
@@ -51,34 +98,18 @@ if __name__ == "__main__":
     window = MainWindow()
 
     ### File menu ###
-    menu = window.menuBar().addMenu("&File")
-    about = QAction("&About")
-    about.triggered.connect(display_about)
-    menu.addAction(about)
-    close = QAction("&Close")
-    close.triggered.connect(window.close)
-    menu.addAction(close)
+    # menu = window.menuBar().addMenu("&File")
+    # about = QAction("&About")
+    # about.triggered.connect(display_about)
+    # menu.addAction(about)
+    # close = QAction("&Close")
+    # close.triggered.connect(window.close)
+    # menu.addAction(close)
 
-    ### Main Menu ###
-    mainMenu = QVBoxLayout()
-    l1 = QLabel()
-    l1.setText("Main Menu")
-    mainMenu.addWidget(l1)
-    startGame = QPushButton("Start a Game")
-    mainMenu.addWidget(startGame)
-    enterPlayerIds = QPushButton("Enter Player Ids")
-    mainMenu.addWidget(enterPlayerIds)
-    viewScore = QPushButton("View Score")
-    mainMenu.addWidget(viewScore)
-    exitGame = QPushButton("Exit Game")
-    mainMenu.addWidget(exitGame)
-    widget = QWidget()
-    window.setCentralWidget(widget)
-    widget.setLayout(mainMenu)
 
-    ### Signals and Slots (MainMenu) ###
-    exitGame.clicked.connect(window.close)
-    viewScore.clicked.connect(lambda x: viewScore(player1Score, player2Score))
+
+    ### Signals (MainMenu) ###
+    # viewScore.clicked.connect(lambda x: window.show_score())
 
     window.show()
     sys.exit(app.exec_())
