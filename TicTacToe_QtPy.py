@@ -9,7 +9,8 @@ import functions as func
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.setWindowTitle("Tic Tack Toe")
+        self.setMinimumSize(QSize(320, 140))
+        self.setWindowTitle("Main Menu")
 
         self.gameParameters()
         self.initUI()
@@ -24,9 +25,6 @@ class MainWindow(QMainWindow):
     def initUI(self):
         ###Main Menu##
         main_menu = QVBoxLayout()
-        l1 = QLabel()
-        l1.setText("Main Menu")
-        main_menu.addWidget(l1)
         start_game = QPushButton("Start a Game")
         main_menu.addWidget(start_game)
         enter_player_ids = QPushButton("Enter Player Ids")
@@ -58,7 +56,7 @@ class MainWindow(QMainWindow):
         self.show()
 
     def startGame(self):
-        print("Start game pushed!")
+        self.startGame_window = StartGame(self)
     
     def enterPlayerIds(self):
         enterPLayerIds_dlg = EnterPlayerIds(self)
@@ -69,7 +67,7 @@ class MainWindow(QMainWindow):
         viewScore_dlg.exec_()
 
     def closeEvent(self,e):
-        answer = QMessageBox.question(window, None, "You are about to leave the game.",
+        answer = QMessageBox.question(self, None, "You are about to leave the game.",
         QMessageBox.Ok | QMessageBox.Cancel)
         if answer & QMessageBox.Ok:
             return
@@ -86,7 +84,6 @@ class MainWindow(QMainWindow):
             "Copyright &copy; Ripegutu Inc.</p>"
         QMessageBox.about(window, "About Tick Tack Toe", text)
 
-
 class DisplayScores(QDialog):
     def __init__(self, parent):
         super(DisplayScores,self).__init__(parent)
@@ -97,7 +94,7 @@ class DisplayScores(QDialog):
         QBtn = QDialogButtonBox.Ok
 
         self.score_label = QLabel()
-        score_text = "The score is currently:\n Player 1: " + str(parent.player1Score) +"\n Player 2: " + str(parent.player2Score)
+        score_text = f"The score is currently:\n {parent.player1Name}: {parent.player1Score}\n {parent.player2Name}: {parent.player2Score}"
         self.score_label.setText(score_text)
 
         self.buttonBox = QDialogButtonBox(QBtn)
@@ -114,25 +111,54 @@ class EnterPlayerIds(QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.setWindowTitle("Enter player IDs")
-        
-        QBtn = QDialogButtonBox.Ok
+
+        self.ok_button = QPushButton("OK", self)
 
         self.ID_label = QLabel()
-        ID_text = "Enter the name for the respective players:"
+        ID_text = "Enter player IDs"
         self.ID_label.setText(ID_text)
 
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
+        self.player1_label = QLabel()
+        self.player1_label.setText("Player 1:")
+        self.player2_label = QLabel()
+        self.player2_label.setText("Player 2:")
 
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.ID_label)
-        self.layout.addWidget(self.buttonBox)
+        self.player1 = QLineEdit()
+        self.player2 = QLineEdit()  
+        self.player1.setPlaceholderText(parent.player1Name)
+        self.player2.setPlaceholderText(parent.player2Name)
+
+        self.layout = QFormLayout()
+        self.layout.addRow(self.ID_label)
+        self.layout.addRow(self.player1_label, self.player1)
+        self.layout.addRow(self.player2_label, self.player2)
+        self.layout.addRow(self.ok_button)
         self.setLayout(self.layout)
 
-if __name__ == "__main__":
-    ### Setup GUI ###
+        self.ok_button.clicked.connect(lambda x: self.okPressed(parent))
+
+    def okPressed(self, parent):
+        if self.player1.text() != "":
+            parent.player1Name = self.player1.text()
+        if self.player2.text() != "":
+            parent.player2Name = self.player2.text()
+        print("Ids successfully changes!")
+        self.accept()
+
+class StartGame(QMainWindow):
+    def __init__(self,parent):
+        super(StartGame,self).__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowTitle("Tic Tac Toe")
+        self.show()
+
+        
+def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     func.set_theme(app)
     window = MainWindow()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
