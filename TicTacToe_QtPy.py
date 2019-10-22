@@ -18,9 +18,14 @@ class MainWindow(QMainWindow):
     def gameParameters(self):
         self.player1Score = 0
         self.player2Score = 0
+
         self.player1Name = "Player 1"
         self.player2Name = "Player 2"
-        print("Setting scores to zero!")
+
+        # [Horizontal, Vertical]
+        self.number_of_squares = [3, 3]
+
+        self.game_window_size = [300, 300]
 
     def initUI(self):
         ###Main Menu##
@@ -29,6 +34,8 @@ class MainWindow(QMainWindow):
         main_menu.addWidget(start_game)
         enter_player_ids = QPushButton("Enter Player Ids")
         main_menu.addWidget(enter_player_ids)
+        change_board_parameters = QPushButton("Change Board Parameters")
+        main_menu.addWidget(change_board_parameters)
         view_score = QPushButton("View Score")
         main_menu.addWidget(view_score)
         exit_game = QPushButton("Exit Game")
@@ -40,6 +47,7 @@ class MainWindow(QMainWindow):
         # Signals for "Main Menu" 
         start_game.clicked.connect(self.startGame)
         enter_player_ids.clicked.connect(self.enterPlayerIds)
+        change_board_parameters.clicked.connect(self.changeGameParameters)
         view_score.clicked.connect(self.viewScore)
         exit_game.clicked.connect(self.close)
 
@@ -59,8 +67,12 @@ class MainWindow(QMainWindow):
         self.startGame_window = StartGame(self)
     
     def enterPlayerIds(self):
-        enterPLayerIds_dlg = EnterPlayerIds(self)
-        enterPLayerIds_dlg.exec_()
+        enterPlayerIds_dlg = EnterPlayerIds(self)
+        enterPlayerIds_dlg.exec_()
+
+    def changeGameParameters(self):
+        changeGameParameters_dlg = ChangeGameParameters(self)
+        changeGameParameters_dlg.exec_()
 
     def viewScore(self, s):
         viewScore_dlg = DisplayScores(self)
@@ -145,14 +157,59 @@ class EnterPlayerIds(QDialog):
         print("Ids successfully changes!")
         self.accept()
 
+class ChangeGameParameters(QDialog):
+    def __init(self, parent):
+        super(ChangeGameParameters, self).__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowTitle("Change Game Parameters")
+
 class StartGame(QMainWindow):
     def __init__(self,parent):
         super(StartGame,self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setMinimumSize(QSize(300+1, 300 + 30))
         self.setWindowTitle("Tic Tac Toe")
+        
+        self.initUI()
+    
+    def initUI(self):
+        self.next_move = QLabel("Player x to move", self)
+        self.next_move.move(10,300)
+
         self.show()
 
-        
+    def paintEvent(self,e):
+        qp = QPainter()
+        qp.begin(self)
+        self.makeBoard(qp)
+        qp.end()
+    
+    def makeBoard(self,qp):
+        pen = QPen(Qt.gray, 1, Qt.SolidLine)
+
+        qp.setPen(pen)
+        # Horizontal
+        qp.drawLine(0, 0, 300, 0)
+        qp.drawLine(0, 100, 300, 100)
+        qp.drawLine(0, 200, 300, 200)
+        qp.drawLine(0, 300, 300, 300)
+        # Vertical
+        qp.drawLine(0, 0, 0, 300)
+        qp.drawLine(100, 0, 100, 300)
+        qp.drawLine(200, 0, 200, 300)
+        qp.drawLine(300, 0, 300, 300)
+
+    def mousePressEvent(self, QMouseEvent):
+        print(QMouseEvent.pos())
+
+    def closeEvent(self,e):
+        answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
+        QMessageBox.Ok | QMessageBox.Cancel)
+        if answer & QMessageBox.Ok:
+            return
+        elif answer & QMessageBox.Cancel:
+            e.ignore()
+
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
