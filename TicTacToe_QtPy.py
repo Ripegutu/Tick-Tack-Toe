@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         # [Horizontal, Vertical]
         self.number_of_squares = [3, 3]
 
-        self.game_window_size = [300, 300]
+        self.game_window_size = [600, 600]
 
     def initUI(self):
         ###Main Menu##
@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         main_menu.addWidget(start_game)
         enter_player_ids = QPushButton("Enter Player Ids")
         main_menu.addWidget(enter_player_ids)
-        change_board_parameters = QPushButton("Change Board Parameters")
+        change_board_parameters = QPushButton("Board Parameters")
         main_menu.addWidget(change_board_parameters)
         view_score = QPushButton("View Score")
         main_menu.addWidget(view_score)
@@ -158,23 +158,83 @@ class EnterPlayerIds(QDialog):
         self.accept()
 
 class ChangeGameParameters(QDialog):
-    def __init(self, parent):
+    def __init__(self, parent):
         super(ChangeGameParameters, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
         self.setWindowTitle("Change Game Parameters")
+
+        self.size_description = QLabel("Board Size: [Horizontal, Vertical]")
+
+        self.h1layout =QHBoxLayout()
+        self.horizontal_size = QLineEdit()
+        self.vertical_size = QLineEdit()
+        self.horizontal_size.setPlaceholderText(str(parent.game_window_size[0]))
+        self.vertical_size.setPlaceholderText(str(parent.game_window_size[1]))
+        self.x_label = QLabel("x")
+        self.h1layout.addWidget(self.horizontal_size)
+        self.h1layout.addWidget(self.x_label)
+        self.h1layout.addWidget(self.vertical_size)
+
+        self.spacing = QLabel(" ")
+            
+        self.square_description = QLabel("Number of Squares: [Horizontal, Vertical]")
+        
+        self.h2layout = QHBoxLayout()
+        self.horizontal_squares = QLineEdit()
+        self.vertical_squares = QLineEdit()
+        self.horizontal_squares.setPlaceholderText(str(parent.number_of_squares[0]))
+        self.vertical_squares.setPlaceholderText(str(parent.number_of_squares[1]))
+        self.h2layout.addWidget(self.horizontal_squares)
+        self.h2layout.addWidget(self.x_label)
+        self.h2layout.addWidget(self.vertical_squares)
+        
+
+        self.ok_button = QPushButton("OK", self)
+
+        self.layout = QFormLayout()
+        self.layout.addRow(self.size_description)
+        self.layout.addRow(self.h1layout)
+        self.layout.addRow(self.spacing)
+        self.layout.addRow(self.square_description)
+        self.layout.addRow(self.h2layout)
+        self.layout.addRow(self.ok_button)
+        self.setLayout(self.layout)
+
+        self.ok_button.clicked.connect(lambda x:self.okPressed(parent))
+
+    def okPressed(self,parent):
+        if self.horizontal_size.text() != "":
+            parent.game_window_size[0] = int(self.horizontal_size.text())
+        
+        if self.vertical_size.text() != "":
+            parent.game_window_size[1] = int(self.vertical_size.text())
+        
+        if self.horizontal_squares.text() != "":
+            parent.number_of_squares[0] = int(self.horizontal_squares.text())
+        
+        if self.vertical_squares.text() != "":
+            parent.number_of_squares[1] = int(self.vertical_squares.text())
+        self.accept()
 
 class StartGame(QMainWindow):
     def __init__(self,parent):
         super(StartGame,self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setMinimumSize(QSize(300+1, 300 + 30))
+        self.setMinimumSize(QSize(parent.game_window_size[0]+1, parent.game_window_size[1] + 30))
         self.setWindowTitle("Tic Tac Toe")
         
+        self.horizontal_lines = parent.number_of_squares[0]
+        self.horizontal_size = parent.game_window_size[0]
+        self.horizontal_space = self.horizontal_size/self.horizontal_lines
+        self.vertical_lines = parent.number_of_squares[1]
+        self.vertical_size = parent.game_window_size[1]
+        self.vertical_space = self.vertical_size/self.vertical_lines
         self.initUI()
     
     def initUI(self):
         self.next_move = QLabel("Player x to move", self)
-        self.next_move.move(10,300)
+        self.next_move.move(10,self.vertical_size)
 
         self.show()
 
@@ -189,15 +249,12 @@ class StartGame(QMainWindow):
 
         qp.setPen(pen)
         # Horizontal
-        qp.drawLine(0, 0, 300, 0)
-        qp.drawLine(0, 100, 300, 100)
-        qp.drawLine(0, 200, 300, 200)
-        qp.drawLine(0, 300, 300, 300)
+        for i in range(self.horizontal_lines + 1):
+            qp.drawLine(0, i * self.horizontal_space, self.horizontal_size, i * self.horizontal_space)
+
         # Vertical
-        qp.drawLine(0, 0, 0, 300)
-        qp.drawLine(100, 0, 100, 300)
-        qp.drawLine(200, 0, 200, 300)
-        qp.drawLine(300, 0, 300, 300)
+        for i in range(self.vertical_lines + 1):
+            qp.drawLine(i * self.vertical_space, 0, i * self.vertical_space, self.vertical_size)
 
     def mousePressEvent(self, QMouseEvent):
         print(QMouseEvent.pos())
