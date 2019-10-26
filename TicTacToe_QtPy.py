@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5 import *
 import sys
 import functions as func
-
+import random
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -230,10 +230,16 @@ class StartGame(QMainWindow):
         self.vertical_lines = parent.number_of_squares[1]
         self.vertical_size = parent.game_window_size[1]
         self.vertical_space = self.vertical_size/self.vertical_lines
+        
+        self.player1 = parent.player1Name
+        self.player2 = parent.player2Name
+        self.active_player = random.choice([parent.player1Name, parent.player2Name])
+        
         self.initUI()
     
     def initUI(self):
-        self.next_move = QLabel("Player x to move", self)
+        self.start_label = self.active_player + " will start the game, Good Luck!"
+        self.next_move = QLabel(self.start_label, self)
         self.next_move.move(10,self.vertical_size)
 
         self.show()
@@ -258,6 +264,12 @@ class StartGame(QMainWindow):
 
     def mousePressEvent(self, QMouseEvent):
         print(QMouseEvent.pos())
+        if self.active_player == self.player1:
+            self.active_player = self.player2
+        else:
+            self.active_player = self.player1
+        self.label = self.active_player + " to move!"
+        self.next_move.setText(self.label)
 
     def closeEvent(self,e):
         answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
