@@ -228,16 +228,18 @@ class StartGame(QMainWindow):
         self.initUI()
 
     def boardAndGameData(self, parent):
-        self.horizontal_lines = parent.number_of_squares[0]
+        self.horizontal_lines = parent.number_of_squares[1]
         self.horizontal_size = parent.game_window_size[0]
-        self.horizontal_space = self.horizontal_size/self.horizontal_lines
-        self.vertical_lines = parent.number_of_squares[1]
+        self.vertical_lines = parent.number_of_squares[0]
         self.vertical_size = parent.game_window_size[1]
-        self.vertical_space = self.vertical_size/self.vertical_lines
-        
+        self.horizontal_space = self.horizontal_size/self.vertical_lines
+        self.vertical_space = self.vertical_size/self.horizontal_lines
+        self.board_size = [["" for x in range(self.horizontal_lines)] for y in range(self.vertical_lines)]
         self.player1 = parent.player1Name
         self.player2 = parent.player2Name
         self.active_player = random.choice([parent.player1Name, parent.player2Name])
+        print(self.vertical_lines, self.horizontal_lines)
+        print(self.vertical_space, self.horizontal_space)
         
     def initUI(self):
         self.start_label = self.active_player + " will start the game, Good Luck!"
@@ -256,13 +258,13 @@ class StartGame(QMainWindow):
         pen = QPen(Qt.gray, 1, Qt.SolidLine)
 
         qp.setPen(pen)
-        # Horizontal
+        # Horizontal lines
         for i in range(self.horizontal_lines + 1):
-            qp.drawLine(0, i * self.horizontal_space, self.horizontal_size, i * self.horizontal_space)
+            qp.drawLine(0, i * self.vertical_space, self.horizontal_size, i * self.vertical_space)
 
-        # Vertical
+        # Vertical lines
         for i in range(self.vertical_lines + 1):
-            qp.drawLine(i * self.vertical_space, 0, i * self.vertical_space, self.vertical_size)
+            qp.drawLine(i * self.horizontal_space, 0, i * self.horizontal_space, self.vertical_size)
 
     def mousePressEvent(self, QMouseEvent):
         self.click = [QMouseEvent.x(), QMouseEvent.y()]
@@ -270,13 +272,38 @@ class StartGame(QMainWindow):
 
         if 0 < self.click[0] < self.horizontal_size and 0 < self.click[1] < self.vertical_size: 
             
-            for hor_sqare in self.horizontal_space:
+            for hor_line in range(self.horizontal_lines):
+                for ver_line in range(self.vertical_lines):
+                    self.xmin = ver_line * self.horizontal_space
+                    self.xmax = (ver_line + 1) * self.horizontal_space
+                    self.ymin = hor_line * self.vertical_space
+                    self.ymax = (1 + hor_line) * self.vertical_space
+                    if self.xmin < self.click[0] < self.xmax and self.ymin < self.click[1] < self.ymax:
+                        self.printX(ver_line, hor_line)
+                        
 
             if self.active_player == self.player1:
                 self.active_player = self.player2
             else:
                 self.active_player = self.player1
             self.next_move.setText(self.active_player + " to move!")
+
+    def printX(self,x,y):
+        print("Print x")
+        print("Square", x,y)
+        print("X limit:")
+        print(self.xmin, self.xmax)
+        print("Y limit:")
+        print(self.ymin, self.ymax)
+        print("\n\n")
+    
+    def printO(self):
+        print("print O")
+        print("X limit:")
+        print(self.xmin, self.xmax)
+        print("Y limit:")
+        print(self.ymin, self.ymax)
+        print("\n\n")
 
     def closeEvent(self,e):
         answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
@@ -286,6 +313,8 @@ class StartGame(QMainWindow):
         elif answer & QMessageBox.Cancel:
             e.ignore()
 
+
+    
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
