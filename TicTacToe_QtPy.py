@@ -224,6 +224,10 @@ class StartGame(QMainWindow):
         self.setMinimumSize(QSize(parent.game_window_size[0]+1, parent.game_window_size[1] + 30))
         self.setWindowTitle("Tic Tac Toe")
         
+        self.boardAndGameData(parent)
+        self.initUI()
+
+    def boardAndGameData(self, parent):
         self.horizontal_lines = parent.number_of_squares[0]
         self.horizontal_size = parent.game_window_size[0]
         self.horizontal_space = self.horizontal_size/self.horizontal_lines
@@ -235,8 +239,6 @@ class StartGame(QMainWindow):
         self.player2 = parent.player2Name
         self.active_player = random.choice([parent.player1Name, parent.player2Name])
         
-        self.initUI()
-    
     def initUI(self):
         self.start_label = self.active_player + " will start the game, Good Luck!"
         self.next_move = QLabel(self.start_label, self)
