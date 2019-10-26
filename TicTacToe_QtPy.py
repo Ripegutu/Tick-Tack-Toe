@@ -265,13 +265,18 @@ class StartGame(QMainWindow):
             qp.drawLine(i * self.vertical_space, 0, i * self.vertical_space, self.vertical_size)
 
     def mousePressEvent(self, QMouseEvent):
-        print(QMouseEvent.pos())
-        if self.active_player == self.player1:
-            self.active_player = self.player2
-        else:
-            self.active_player = self.player1
-        self.label = self.active_player + " to move!"
-        self.next_move.setText(self.label)
+        self.click = [QMouseEvent.x(), QMouseEvent.y()]
+        print(self.click)
+
+        if 0 < self.click[0] < self.horizontal_size and 0 < self.click[1] < self.vertical_size: 
+            
+            for hor_sqare in self.horizontal_space:
+
+            if self.active_player == self.player1:
+                self.active_player = self.player2
+            else:
+                self.active_player = self.player1
+            self.next_move.setText(self.active_player + " to move!")
 
     def closeEvent(self,e):
         answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
