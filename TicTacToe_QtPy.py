@@ -238,12 +238,11 @@ class StartGame(QMainWindow):
         self.player1 = parent.player1Name
         self.player2 = parent.player2Name
         self.active_player = random.choice([parent.player1Name, parent.player2Name])
-        print(self.vertical_lines, self.horizontal_lines)
-        print(self.vertical_space, self.horizontal_space)
         
     def initUI(self):
         self.start_label = self.active_player + " will start the game, Good Luck!"
         self.next_move = QLabel(self.start_label, self)
+        self.next_move.setFixedSize(400,30)
         self.next_move.move(10,self.vertical_size)
 
         self.show()
@@ -260,15 +259,14 @@ class StartGame(QMainWindow):
         qp.setPen(pen)
         # Horizontal lines
         for i in range(self.horizontal_lines + 1):
-            qp.drawLine(0, i * self.vertical_space, self.horizontal_size, i * self.vertical_space)
-
+            qp.drawLine(0, i * self.vertical_space, self.frameGeometry().width(), i * self.vertical_space)
+        print(self.frameGeometry().width(), self.frameGeometry().height())
         # Vertical lines
         for i in range(self.vertical_lines + 1):
-            qp.drawLine(i * self.horizontal_space, 0, i * self.horizontal_space, self.vertical_size)
+            qp.drawLine(i * self.horizontal_space, 0, i * self.horizontal_space, self.frameGeometry().height() - 69)
 
     def mousePressEvent(self, QMouseEvent):
         self.click = [QMouseEvent.x(), QMouseEvent.y()]
-        print(self.click)
 
         if 0 < self.click[0] < self.horizontal_size and 0 < self.click[1] < self.vertical_size: 
             
@@ -279,16 +277,25 @@ class StartGame(QMainWindow):
                     self.ymin = hor_line * self.vertical_space
                     self.ymax = (1 + hor_line) * self.vertical_space
                     if self.xmin < self.click[0] < self.xmax and self.ymin < self.click[1] < self.ymax:
-                        self.printX(ver_line, hor_line)
-                        
+                        if self.board_size[ver_line][hor_line] == "":
+                            if self.active_player == self.player1:
+                                self.printX(ver_line, hor_line)
+                            else: 
+                                self.printO(ver_line, hor_line)
 
-            if self.active_player == self.player1:
-                self.active_player = self.player2
-            else:
-                self.active_player = self.player1
-            self.next_move.setText(self.active_player + " to move!")
+                            if self.active_player == self.player1:
+                                self.active_player = self.player2
+                            else:
+                                self.active_player = self.player1
+
+                            self.label = self.active_player + " to move!"
+                            self.next_move.setText(self.label)
+                            print(self.board_size)
+                        else: 
+                            self.next_move.setText(self.label + " But try a different square!")
 
     def printX(self,x,y):
+        self.board_size[x][y] = "X"
         print("Print x")
         print("Square", x,y)
         print("X limit:")
@@ -297,8 +304,12 @@ class StartGame(QMainWindow):
         print(self.ymin, self.ymax)
         print("\n\n")
     
-    def printO(self):
+    def printO(self,x,y):
+        self.board_size[x][y] = "O"
+
+        
         print("print O")
+        print("Square", x,y)
         print("X limit:")
         print(self.xmin, self.xmax)
         print("Y limit:")
