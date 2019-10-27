@@ -232,7 +232,7 @@ class StartGame(QMainWindow):
         self.horizontal_size = parent.game_window_size[0]
         self.vertical_lines = parent.number_of_squares[0]
         self.vertical_size = parent.game_window_size[1]
-        self.board_size = [["" for x in range(self.horizontal_lines)] for y in range(self.vertical_lines)]
+        self.board_size = [["" for x in range(self.vertical_lines)] for y in range(self.horizontal_lines)]
         self.player1 = parent.player1Name
         self.player2 = parent.player2Name
         self.active_player = random.choice([parent.player1Name, parent.player2Name])
@@ -242,6 +242,7 @@ class StartGame(QMainWindow):
         self.next_move = QLabel(self.start_label, self)
         self.next_move.setFixedSize(400,30)
         self.next_move.move(10,self.vertical_size)
+        self.game_label = QLabel("", self)
 
         self.show()
 
@@ -249,11 +250,12 @@ class StartGame(QMainWindow):
         qp = QPainter()
         qp.begin(self)
         self.makeBoard(qp)
+        self.paintXO(qp)
+
         qp.end()
     
-    def makeBoard(self,qp):
+    def makeBoard(self, qp):
         pen = QPen(Qt.gray, 1, Qt.SolidLine)
-
         qp.setPen(pen)
 
         self.horizontal_space = (self.frameGeometry().width()-3)/self.vertical_lines
@@ -278,11 +280,11 @@ class StartGame(QMainWindow):
                     self.ymin = hor_line * self.vertical_space
                     self.ymax = (1 + hor_line) * self.vertical_space
                     if self.xmin < self.click[0] < self.xmax and self.ymin < self.click[1] < self.ymax:
-                        if self.board_size[ver_line][hor_line] == "":
+                        if self.board_size[hor_line][ver_line] == "":
                             if self.active_player == self.player1:
-                                self.printX(ver_line, hor_line)
+                                self.board_size[hor_line][ver_line] = "X"
                             else: 
-                                self.printO(ver_line, hor_line)
+                                self.board_size[hor_line][ver_line] = "O"
 
                             if self.active_player == self.player1:
                                 self.active_player = self.player2
@@ -291,31 +293,22 @@ class StartGame(QMainWindow):
 
                             self.label = self.active_player + " to move!"
                             self.next_move.setText(self.label)
+                            self.repaint()
                             print(self.board_size)
                         else: 
                             self.next_move.setText(self.label + " But try a different square!")
 
-    def printX(self,x,y):
-        self.board_size[x][y] = "X"
-        print("Print x")
-        print("Square", x,y)
-        print("X limit:")
-        print(self.xmin, self.xmax)
-        print("Y limit:")
-        print(self.ymin, self.ymax)
-        print("\n\n")
-    
-    def printO(self,x,y):
-        self.board_size[x][y] = "O"
-
+    def paintXO(self, qp):
+        pen = QPen(Qt.gray, 2, Qt.SolidLine)
+        qp.setPen(pen)
+        for col_no, col in enumerate(self.board_size):
+            for row_no, square in enumerate(col):
+                if square == "X":
+                    qp.drawLine(self.horizontal_space * row_no, self.vertical_space * col_no, self.horizontal_space * (row_no + 1), self.vertical_space * (col_no + 1))
+                    qp.drawLine(self.horizontal_space * (row_no + 1), self.vertical_space * col_no, self.horizontal_space * row_no, self.vertical_space * (col_no+ 1))
         
-        print("print O")
-        print("Square", x,y)
-        print("X limit:")
-        print(self.xmin, self.xmax)
-        print("Y limit:")
-        print(self.ymin, self.ymax)
-        print("\n\n")
+                elif square == "O":
+                    qp.drawEllipse(self.horizontal_space * row_no, self.vertical_space * col_no, self.horizontal_space, self.vertical_space)
 
     def closeEvent(self,e):
         answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
