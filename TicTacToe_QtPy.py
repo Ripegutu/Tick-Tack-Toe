@@ -232,8 +232,6 @@ class StartGame(QMainWindow):
         self.horizontal_size = parent.game_window_size[0]
         self.vertical_lines = parent.number_of_squares[0]
         self.vertical_size = parent.game_window_size[1]
-        self.horizontal_space = self.horizontal_size/self.vertical_lines
-        self.vertical_space = self.vertical_size/self.horizontal_lines
         self.board_size = [["" for x in range(self.horizontal_lines)] for y in range(self.vertical_lines)]
         self.player1 = parent.player1Name
         self.player2 = parent.player2Name
@@ -257,10 +255,13 @@ class StartGame(QMainWindow):
         pen = QPen(Qt.gray, 1, Qt.SolidLine)
 
         qp.setPen(pen)
+
+        self.horizontal_space = (self.frameGeometry().width()-3)/self.vertical_lines
+        self.vertical_space = (self.frameGeometry().height()-69)/self.horizontal_lines
+        self.next_move.move(10,self.frameGeometry().height()-69)
         # Horizontal lines
         for i in range(self.horizontal_lines + 1):
             qp.drawLine(0, i * self.vertical_space, self.frameGeometry().width(), i * self.vertical_space)
-        print(self.frameGeometry().width(), self.frameGeometry().height())
         # Vertical lines
         for i in range(self.vertical_lines + 1):
             qp.drawLine(i * self.horizontal_space, 0, i * self.horizontal_space, self.frameGeometry().height() - 69)
@@ -268,7 +269,7 @@ class StartGame(QMainWindow):
     def mousePressEvent(self, QMouseEvent):
         self.click = [QMouseEvent.x(), QMouseEvent.y()]
 
-        if 0 < self.click[0] < self.horizontal_size and 0 < self.click[1] < self.vertical_size: 
+        if 0 < self.click[0] < self.frameGeometry().width() and 0 < self.click[1] < (self.frameGeometry().height()-69): 
             
             for hor_line in range(self.horizontal_lines):
                 for ver_line in range(self.vertical_lines):
