@@ -5,6 +5,7 @@ from PyQt5 import *
 import sys
 import functions as func
 import random
+import numpy as np
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -294,9 +295,22 @@ class StartGame(QMainWindow):
                             self.label = self.active_player + " to move!"
                             self.next_move.setText(self.label)
                             self.repaint()
-                            print(self.board_size)
+
+                            self.winnerLines()
+                            
                         else: 
                             self.next_move.setText(self.label + " But try a different square!")
+
+    def winnerLines(self):
+        xy = np.asarray(self.board_size)
+        diags = ([xy[::-1,:].diagonal(i) for i in range(-xy.shape[0]+1, xy.shape[1])])
+        diags.extend(xy.diagonal(i) for i in range(xy.shape[1]-1,-xy.shape[0],-1))
+        self.diagonal_winner_list = [n.tolist() for n in diags  if len(n.tolist()) >= 3]
+        self.horizontal_winner_list = [x for x in self.board_size]
+        self.vertical_winner_list = [x.tolist() for x in xy.T]
+        self.winner_list = [x for x in self.horizontal_winner_list + self.vertical_winner_list + self.diagonal_winner_list]
+        print(self.winner_list,"\n")
+
 
     def paintXO(self, qp):
         pen = QPen(Qt.gray, 2, Qt.SolidLine)
@@ -318,8 +332,6 @@ class StartGame(QMainWindow):
         elif answer & QMessageBox.Cancel:
             e.ignore()
 
-
-    
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
