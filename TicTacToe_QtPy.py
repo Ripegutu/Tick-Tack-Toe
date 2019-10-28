@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
             "<p>This is a game of tic tac toe.  <br/>" \
             "Version 1.0.0.0<br/>" \
             "Copyright &copy; Ripegutu Inc.</p>"
-        QMessageBox.about(window, "About Tick Tack Toe", text)
+        QMessageBox.about(self, "About Tick Tack Toe", text)
 
 class DisplayScores(QDialog):
     def __init__(self, parent):
