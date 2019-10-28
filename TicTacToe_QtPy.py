@@ -17,15 +17,16 @@ class MainWindow(QMainWindow):
         self.initUI()
         
     def gameParameters(self):
-        self.player1Score = 0
-        self.player2Score = 0
+        self.player1_score = 0
+        self.player2_score = 0
 
-        self.player1Name = "Player 1"
-        self.player2Name = "Player 2"
+        self.player1_name = "Player 1"
+        self.player2_name = "Player 2"
+
+        self.squares_to_win = 3
 
         # [Horizontal, Vertical]
         self.number_of_squares = [3, 3]
-
         self.game_window_size = [600, 600]
 
     def initUI(self):
@@ -107,7 +108,7 @@ class DisplayScores(QDialog):
         QBtn = QDialogButtonBox.Ok
 
         self.score_label = QLabel()
-        score_text = f"The score is currently:\n {parent.player1Name}: {parent.player1Score}\n {parent.player2Name}: {parent.player2Score}"
+        score_text = f"The score is currently:\n {parent.player1_name}: {parent.player1_score}\n {parent.player2_name}: {parent.player2_score}"
         self.score_label.setText(score_text)
 
         self.buttonBox = QDialogButtonBox(QBtn)
@@ -138,8 +139,8 @@ class EnterPlayerIds(QDialog):
 
         self.player1 = QLineEdit()
         self.player2 = QLineEdit()  
-        self.player1.setPlaceholderText(parent.player1Name)
-        self.player2.setPlaceholderText(parent.player2Name)
+        self.player1.setPlaceholderText(parent.player1_name)
+        self.player2.setPlaceholderText(parent.player2_name)
 
         self.layout = QFormLayout()
         self.layout.addRow(self.ID_label)
@@ -152,9 +153,9 @@ class EnterPlayerIds(QDialog):
 
     def okPressed(self, parent):
         if self.player1.text() != "":
-            parent.player1Name = self.player1.text()
+            parent.player1_name = self.player1.text()
         if self.player2.text() != "":
-            parent.player2Name = self.player2.text()
+            parent.player2_name = self.player2.text()
         print("Ids successfully changes!")
         self.accept()
 
@@ -172,9 +173,8 @@ class ChangeGameParameters(QDialog):
         self.vertical_size = QLineEdit()
         self.horizontal_size.setPlaceholderText(str(parent.game_window_size[0]))
         self.vertical_size.setPlaceholderText(str(parent.game_window_size[1]))
-        self.x_label = QLabel("x")
         self.h1layout.addWidget(self.horizontal_size)
-        self.h1layout.addWidget(self.x_label)
+        self.h1layout.addWidget(QLabel("x"))
         self.h1layout.addWidget(self.vertical_size)
 
         self.spacing = QLabel(" ")
@@ -187,9 +187,13 @@ class ChangeGameParameters(QDialog):
         self.horizontal_squares.setPlaceholderText(str(parent.number_of_squares[0]))
         self.vertical_squares.setPlaceholderText(str(parent.number_of_squares[1]))
         self.h2layout.addWidget(self.horizontal_squares)
-        self.h2layout.addWidget(self.x_label)
+        self.h2layout.addWidget(QLabel("x"))
         self.h2layout.addWidget(self.vertical_squares)
         
+        self.win_label = QLabel("No of squares to win:",self)
+        self.win_line_edit = QLineEdit()
+        self.win_line_edit.setPlaceholderText(str(parent.squares_to_win))
+
 
         self.ok_button = QPushButton("OK", self)
 
@@ -199,6 +203,8 @@ class ChangeGameParameters(QDialog):
         self.layout.addRow(self.spacing)
         self.layout.addRow(self.square_description)
         self.layout.addRow(self.h2layout)
+        self.layout.addRow(self.spacing)
+        self.layout.addRow(self.win_label, self.win_line_edit)
         self.layout.addRow(self.ok_button)
         self.setLayout(self.layout)
 
@@ -206,16 +212,33 @@ class ChangeGameParameters(QDialog):
 
     def okPressed(self,parent):
         if self.horizontal_size.text() != "":
-            parent.game_window_size[0] = int(self.horizontal_size.text())
+            try:
+                parent.game_window_size[0] = int(self.horizontal_size.text())
+            except:
+                pass
         
         if self.vertical_size.text() != "":
-            parent.game_window_size[1] = int(self.vertical_size.text())
+            try:
+                parent.game_window_size[1] = int(self.vertical_size.text())
+            except:
+                pass
         
         if self.horizontal_squares.text() != "":
-            parent.number_of_squares[0] = int(self.horizontal_squares.text())
+            try:
+                parent.number_of_squares[0] = int(self.horizontal_squares.text())
+            except:
+                pass
         
         if self.vertical_squares.text() != "":
-            parent.number_of_squares[1] = int(self.vertical_squares.text())
+            try:
+                parent.number_of_squares[1] = int(self.vertical_squares.text())
+            except:
+                pass
+        if self.win_line_edit.text != "":
+            try:
+                parent.squares_to_win = int(self.win_line_edit.text())
+            except:
+                pass
         self.accept()
 
 class StartGame(QMainWindow):
@@ -224,6 +247,10 @@ class StartGame(QMainWindow):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setMinimumSize(QSize(parent.game_window_size[0]+1, parent.game_window_size[1] + 30))
         self.setWindowTitle("Tic Tac Toe")
+        self.squares_to_win = parent.squares_to_win
+        self.game_winner = None
+        self.player1_score, self.player2_score = parent.player1_score, parent.player2_score
+        self.parent = parent
         
         self.boardAndGameData(parent)
         self.initUI()
@@ -234,10 +261,11 @@ class StartGame(QMainWindow):
         self.vertical_lines = parent.number_of_squares[0]
         self.vertical_size = parent.game_window_size[1]
         self.board_size = [["" for x in range(self.vertical_lines)] for y in range(self.horizontal_lines)]
-        self.player1 = parent.player1Name
-        self.player2 = parent.player2Name
-        self.active_player = random.choice([parent.player1Name, parent.player2Name])
-        
+        self.no_of_squares = len(self.board_size) * len(self.board_size[0])
+        self.player1 = parent.player1_name
+        self.player2 = parent.player2_name
+        self.active_player = random.choice([parent.player1_name, parent.player2_name])
+
     def initUI(self):
         self.start_label = self.active_player + " will start the game, Good Luck!"
         self.next_move = QLabel(self.start_label, self)
@@ -297,6 +325,7 @@ class StartGame(QMainWindow):
                             self.repaint()
 
                             self.winnerLines()
+                            self.decideWinner()
                             
                         else: 
                             self.next_move.setText(self.label + " But try a different square!")
@@ -305,12 +334,50 @@ class StartGame(QMainWindow):
         xy = np.asarray(self.board_size)
         diags = ([xy[::-1,:].diagonal(i) for i in range(-xy.shape[0]+1, xy.shape[1])])
         diags.extend(xy.diagonal(i) for i in range(xy.shape[1]-1,-xy.shape[0],-1))
-        self.diagonal_winner_list = [n.tolist() for n in diags  if len(n.tolist()) >= 3]
+        self.diagonal_winner_list = [n.tolist() for n in diags  if len(n.tolist()) >= self.squares_to_win]
         self.horizontal_winner_list = [x for x in self.board_size]
         self.vertical_winner_list = [x.tolist() for x in xy.T]
         self.winner_list = [x for x in self.horizontal_winner_list + self.vertical_winner_list + self.diagonal_winner_list]
-        print(self.winner_list,"\n")
 
+    def decideWinner(self):
+        
+        prev_square = None
+        winner_count = 0
+        draw_count = 0
+        for col in self.winner_list:
+            for i, square in enumerate(col):
+                
+
+                if i == 0:
+                    winner_count = 1
+                    prev_square = square
+                else:
+                    if prev_square == square and square != "":
+                        winner_count += 1
+                    else: 
+                        winner_count = 1
+                        prev_square = square
+                
+                if winner_count == self.squares_to_win:
+                    if square == "X":
+                        self.winner_text = f"{self.player1} is the winner!"
+                        self.game_winner = self.player1
+                    else:
+                        self.winner_text = f"{self.player2} is the winner!"
+                        self.game_winner = self.player2
+
+                    self.close()
+                    
+            winner_count = 0
+        for col in self.board_size:
+            for square in col:
+                if square != "":
+                    draw_count += 1
+
+        if draw_count == self.no_of_squares and self.game_winner == None:
+            self.winner_text = "The Game ends with a draw!"
+            self.game_winner = "No"
+            self.close()
 
     def paintXO(self, qp):
         pen = QPen(Qt.gray, 2, Qt.SolidLine)
@@ -325,12 +392,29 @@ class StartGame(QMainWindow):
                     qp.drawEllipse(self.horizontal_space * row_no, self.vertical_space * col_no, self.horizontal_space, self.vertical_space)
 
     def closeEvent(self,e):
-        answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
-        QMessageBox.Ok | QMessageBox.Cancel)
-        if answer & QMessageBox.Ok:
-            return
-        elif answer & QMessageBox.Cancel:
-            e.ignore()
+        if self.game_winner == None:
+            answer = QMessageBox.question(self, None, "You are about to exit\nThe current game will be lost.",
+            QMessageBox.Ok | QMessageBox.Cancel)
+            if answer & QMessageBox.Ok:
+                return
+            elif answer & QMessageBox.Cancel:
+                e.ignore()
+        else:
+            answer = QMessageBox.question(self, None, f"{self.winner_text}\nDo you want to play a new game?",
+            QMessageBox.Ok | QMessageBox.Discard)
+
+            if self.game_winner == self.player1:
+                self.parent.player1_score = self.parent.player1_score + 1
+            elif self.game_winner == self.player2:
+                self.parent.player2_score = self.parent.player2_score + 1
+
+            if answer & QMessageBox.Ok:
+                self.board_size = [["" for x in range(self.vertical_lines)] for y in range(self.horizontal_lines)]
+                self.game_winner = None
+                e.ignore()
+                self.repaint()
+            elif answer & QMessageBox.Discard:
+                return
 
 def main():
     app = QApplication(sys.argv)
